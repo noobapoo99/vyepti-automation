@@ -1,0 +1,79 @@
+{
+  "patient_information": {
+    "first_name": "John",
+    "last_name": "Doe",
+    "date_of_birth": "1964-08-17",
+    "gender": "Male",
+    "address": {
+      "line1": "9286 Park Avenue",
+      "city": "Seattle",
+      "state": "Washington",
+      "zip": "81414"
+    },
+    "phone": "(619) 324-8725",
+    "email": "johndoe3310@yahoo.com",
+    "race": "Prefer not to say",
+    "marital_status": "Divorced"
+  },
+
+  "eligibility": {
+    "is_patient_17_or_older": "Yes",
+    "prescribed_for_fda_approved_indication": "Yes",
+    "insurance_type": "Private / Commercial",
+    "us_resident": "Yes",
+    "commercially_insured": "Yes",
+    "patient_insured": "Yes"
+  },
+
+  "drug_information": {
+    "gcph_token": "sracuwpsxs4rscis88qy13va5pa",
+    "drug": "Test Drug",
+    "diagnosis": "Migraine",
+    "purpose_of_submission": "Copay Program Enrollment",
+    "partner_name": "getcopayhelp",
+    "application_initiated_by": "site"
+  },
+
+  "primary_insurance": {
+    "insurance_name": "Humana PPO",
+    "plan_type": "HMO",
+    "policy_holder_name": "John Doe",
+    "member_id": "HMW645682",
+    "group_id": "326525",
+    "relationship_with_insured": "Self",
+    "phone": "(646) 532-7557"
+  },
+
+  "prescriber_information": {
+    "salutation": "Dr.",
+    "first_name": "Mary",
+    "last_name": "Davis",
+    "designation": "MD",
+    "npi": "1154892507",
+    "email": "doctor488@medcenter.com",
+    "phone": "+1 8585022705",
+    "fax": "(713) 659-6372",
+    "address": {
+      "line1": "783 Medical Plaza",
+      "city": "Seattle",
+      "state": "Washington",
+      "zip": "81414"
+    }
+  },
+
+  "facility_information": {
+    "name": "Seattle Family Practice",
+    "office_contact_name": "Mary Johnson",
+    "office_contact_title": "Office Manager",
+    "email": "office@seattlemedical.com",
+    "phone": "(617) 238-7765",
+    "fax": "(602) 220-2561",
+    "city": "Seattle",
+    "state": "Washington",
+    "zip": "81414",
+    "service_facility_location": "Seattle",
+    "billing_provider_information": "Bedrock Medical Solutions, Seattle, Washington 81414",
+    "center_npi": "1839815041",
+    "center_tax_id": "52-5155331"
+  }
+}
