@@ -3,7 +3,7 @@ from playwright.sync_api import sync_playwright
 
 PORTAL_URL = "https://portal.trialcard.com/lundbeck/vyepti/"
 
-def load_patient_data(path="input_data.json"):
+def load_patient_data(path="./data/input_data.json"):
     with open(path, "r") as f:
         return json.load(f)
 
