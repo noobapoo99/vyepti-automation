@@ -24,7 +24,7 @@ def main():
 
         fill_eligibility(page, data)
         fill_patient_information(page, data)
-        fill_prescriber_information(page, data)
+        fill_prescriber_information(page, data["prescriber_information"])
         fill_primary_insurance(page, data)
 
         status("SUCCESS_FORM_COMPLETED",

@@ -7,7 +7,10 @@ def fill_prescriber_information(page, data):
 
     page.fill("input[name='PhysicianAddress1']", data["address"]["line1"])
     page.fill("input[name='PhysicianCity']", data["address"]["city"])
-    page.select_option("select[name='PhysicianState']", data["address"]["state"])
+    # page.select_option("select[name='PhysicianState']", data["address"]["state"])
+    page.locator("select[name='PhysicianState']").select_option(
+        label=data["address"]["state"]
+    )
     page.fill("input[name='PhysicianZIP']", data["address"]["zip"])
 
     page.fill("input[name='PhysicianOfficeNumber']", data["phone"])
