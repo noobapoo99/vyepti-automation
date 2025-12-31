@@ -22,10 +22,10 @@ def main():
 
         page.goto(PORTAL_URL)
 
-        fill_eligibility(page, data["eligibility"])
-        fill_patient_information(page, data["patient_information"])
-        fill_prescriber_information(page, data["prescriber_information"])
-        fill_primary_insurance(page, data["primary_insurance"])
+        fill_eligibility(page, data)
+        fill_patient_information(page, data)
+        fill_prescriber_information(page, data)
+        fill_primary_insurance(page, data)
 
         status("SUCCESS_FORM_COMPLETED",
                "All pages completed — stopped before submission")
