@@ -4,6 +4,40 @@ from core.utils import (
     status
 )
 
+def click_vselect_and_choose(page, label_text, value):
+    print(f"[DEBUG] Selecting {label_text} = {value}")
+
+    label = page.get_by_text(label_text, exact=False)
+    container = label.locator("xpath=ancestor::*[contains(@class,'v-input')]").first
+
+    caret = container.locator(".v-input__icon--append").first
+    caret.click()
+
+    option = page.get_by_role("option", name=value, exact=False).first
+    option.wait_for(timeout=8000)
+    option.click()
+
+
+def fill_vtext_field(page, label_text, value):
+    if not value:
+        return
+
+    field = page.get_by_text(label_text, exact=False).locator("xpath=ancestor::*[contains(@class,'v-input')]")
+    field.locator("input").first.fill(value)
+
+
+def select_radio(page, label_text):
+    print(f"[DEBUG] Selecting radio: {label_text}")
+
+    label = page.get_by_text(label_text, exact=False)
+
+    radio_container = label.locator(
+        "xpath=ancestor::*[contains(@class,'v-radio')]"
+    ).first
+
+    radio_container.click(force=True)
+
+
 def fill_patient_information(page, data):
 
     try:
@@ -20,25 +54,25 @@ def fill_patient_information(page, data):
         patient = data["patient_information"]
         address = patient.get("address", {})
 
-        page.fill("input[name='PatientFirstName']", patient["first_name"])
-        page.fill("input[name='PatientLastName']", patient["last_name"])
+        fill_vtext_field(page, "Patient First Name", patient["first_name"])
+        fill_vtext_field(page, "Patient Last Name", patient["last_name"])
 
-        page.fill("input[name='PatientAddress1']", address.get("line1", ""))
-        page.fill("input[name='PatientCity']", address.get("city", ""))
+        fill_vtext_field(page, "Patient Address Line 1", address.get("line1", ""))
+        fill_vtext_field(page, "Patient Address Line 2", address.get("line2", ""))
 
-        page.locator("select[name='PatientState']").select_option(
-            label=address.get("state", "")
-        )
+        fill_vtext_field(page, "Patient ZIP", address.get("zip", ""))
+        fill_vtext_field(page, "Patient City", address.get("city", ""))
 
-        page.fill("input[name='PatientZIP']", address.get("zip", ""))
+        click_vselect_and_choose(page, "Patient State", address.get("state"))
 
-        page.locator("select[name='PatientGender']").select_option(
-            label=patient["gender"]
-        )
+        fill_vtext_field(page, "Patient Date of Birth", patient["date_of_birth"])
 
-        page.fill("input[name='PatientDOB']", patient["date_of_birth"])
-        page.fill("input[name='PatientEmail']", patient["email"])
-        page.fill("input[name='PatientPhone']", patient["phone"])
+        click_vselect_and_choose(page, "Patient Gender", patient["gender"])
+
+        fill_vtext_field(page, "Patient Email Address", patient["email"])
+        fill_vtext_field(page, "Patient Phone Number", patient["phone"])
+
+        select_radio(page, "Home Phone")
 
     except Exception as e:
         return status(
@@ -48,7 +82,6 @@ def fill_patient_information(page, data):
             step="field_mapping"
         )
 
-    # Screenshot AFTER fill
     take_screenshot(page, "02_patient_information_filled")
 
     if not safe_click(page, "button:has-text('Next')"):
@@ -61,4 +94,4 @@ def fill_patient_information(page, data):
 
     page.wait_for_load_state("networkidle")
 
-    return None  # success → continue workflow
+    return None

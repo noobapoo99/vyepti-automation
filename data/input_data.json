@@ -2,7 +2,7 @@
   "patient_information": {
     "first_name": "John",
     "last_name": "Doe",
-    "date_of_birth": "1964-08-17",
+    "date_of_birth": "08-02-1985",
     "gender": "Male",
     "address": {
       "line1": "9286 Park Avenue",

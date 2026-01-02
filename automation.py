@@ -31,17 +31,17 @@ def main():
             return result
 
         # ---- PAGE 2 ----
-        result = fill_patient_information(page, data["patient_information"])
+        result = fill_patient_information(page, data)
         if result:
             return result
 
         # ---- PAGE 3 ----
-        result = fill_prescriber_information(page, data["prescriber_information"])
+        result = fill_prescriber_information(page, data)
         if result:
             return result
 
         # ---- PAGE 4 (STOP HERE) ----
-        result = fill_primary_insurance(page, data["primary_insurance"])
+        result = fill_primary_insurance(page, data)
         if result:
             return result
 
