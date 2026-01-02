@@ -1,80 +1,144 @@
-from core.utils import take_screenshot
-
-
-def select_yes_no_question(page, question_text, answer):
-    option = "Yes" if str(answer).lower() == "yes" else "No"
-    question = page.get_by_text(question_text, exact=False)
-    question.locator(
-        f".//label[normalize-space()='{option}']"
-    ).click()
-
-
+from core.utils import (
+    safe_click,
+    take_screenshot,
+    status
+)
 def select_dropdown(page, label_text, value):
     if value:
-            page.get_by_label(label_text, exact=False).select_option(value)
+        page.get_by_label(label_text, exact=False).select_option(value)
+def select_radio_group(page, index, answer):
+    option = "Yes" if str(answer).lower() == "yes" else "No"
+
+    group = page.get_by_role("radiogroup").nth(index)
+
+    group.get_by_role("radio", name=option, exact=False).click()
 
 
 def fill_text_field(page, label_text, value):
     if value:
         page.get_by_label(label_text, exact=False).fill(value)
+def fill_vtext_field(page, label_text, value):
+    if not value:
+        return
 
+    # Click the field container first
+    field = page.get_by_text(label_text, exact=False).locator("..").locator("..")
+    field.click()
+
+    # Fill the contained input
+    field.locator("input").fill(value)
+def click_radio_by_question_text(page, question_text, answer):
+    option = "Yes" if str(answer).lower() == "yes" else "No"
+
+    # Find question block
+    question = page.get_by_text(question_text, exact=False)
+
+    # Move to question container
+    container = question.locator("xpath=ancestor::div[contains(@class,'radio-question')]")
+
+    # Click Yes / No label
+    container.get_by_label(option, exact=False).click()
+
+def select_named_radio(page, name, answer):
+    option = "Yes" if str(answer).lower() == "yes" else "No"
+
+    group = page.locator(f"input[name='{name}']").first.locator("xpath=ancestor::div[contains(@class,'v-input--selection-controls')]")
+
+    group.get_by_label(option, exact=False).click()
+     
+def select_vselect_option(page, label_text, value):
+    # Click field first
+    page.get_by_label(label_text, exact=False).click()
+
+    # Wait for menu + click option text
+    page.get_by_role("option", name=value, exact=False).click()
 
 def fill_eligibility(page, data):
-    eligibility = data["eligibility"]
+
+    try:
+        page.wait_for_selector("text=Patient Residence State", timeout=20000)
+    except:
+        return status(
+            "PAGE_LOAD_TIMEOUT",
+            "Eligibility page did not load",
+            page="eligibility",
+            step="wait_for_page"
+        )
+
     patient = data.get("patient_information", {})
-    facility = data.get("facility_information", {})
     address = patient.get("address", {})
+    eligibility = data["eligibility"]
+    facility = data.get("facility_information", {})
 
-    page.wait_for_selector("text=Patient Residence State")
+    try:
+    
+        select_vselect_option(
+            page,
+            "Patient Residence State",
+            address.get("state")
+        )
 
-    select_dropdown(
-        page,
-        "Patient Residence State",
-        address.get("state")
-    )
+        select_vselect_option(
+            page,
+            "Enrollment Site Type",
+            "Physician Office"
+        )
 
-    select_dropdown(
-        page,
-        "Enrollment Site Type",
-        "Physician Office"
-    )
+        # --- v-text-field inputs ---
+        fill_vtext_field(page, "Enrollment Site Name", facility.get("name"))
+        fill_vtext_field(page, "Enrollment Site Phone Number", facility.get("phone"))
+        fill_vtext_field(page, "Enrollment Site Fax Number", facility.get("fax"))
 
-    fill_text_field(page, "Enrollment Site Name",
-                    facility.get("name"))
+    except Exception as e:
+        return status(
+            "MISSING_PORTAL_FIELD",
+            f"Eligibility field failure: {str(e)}",
+            page="eligibility",
+            step="field_mapping",
+            extra=str(e)
+        )
 
-    fill_text_field(page, "Enrollment Site Phone Number",
-                    facility.get("phone"))
 
-    fill_text_field(page, "Enrollment Site Fax Number",
-                    facility.get("fax"))
+    try:
+    
 
-    questions = [
-        (
-            "Is your patient 17 years of age or older?",
-            eligibility["is_patient_17_or_older"]
-        ),
-        (
-            "Has your patient been prescribed VYEPTI",
-            eligibility["prescribed_for_fda_approved_indication"]
-        ),
-        (
-            "Is your patient enrolled in a state or federally-funded",
-            "No"
-        ),
-        (
-            "Is your patient both Medicare-eligible and enrolled",
-            "No"
-        ),
-        (
-            "Is your patient self-pay or uninsured?",
-            "No"
-        ),
-    ]
+        select_radio_group(page, 0, eligibility["Is your patient 17 years of age or older?"])
+        select_radio_group(page, 1, eligibility["Has your patient been prescribed VYEPTI for an FDA-approved indication"])
 
-    for question_text, value in questions:
-        select_yes_no_question(page, question_text, value)
+        # These must be NO
+        select_radio_group(page, 2, "No")
+        select_radio_group(page, 3, "No")
+        select_radio_group(page, 4, "No")
 
-    take_screenshot(page, "./../screenshots01_eligibility")
 
-    page.click("text=NEXT")
-    page.wait_for_load_state("networkidle")
+    except Exception:
+        return status(
+            "CLICK_ACTION_FAILED",
+            "Eligibility radio option selection failed",
+            page="eligibility",
+            step="eligibility_questions"
+           
+        )
+    try:
+        checkbox = page.get_by_role("checkbox").first
+        checkbox.check()
+
+    except Exception as e:
+        return status(
+            "CLICK_ACTION_FAILED",
+            "Eligibility attestation checkbox not selectable",
+            page="eligibility",
+            step="attestation_checkbox"
+        )
+
+    take_screenshot(page, "01_eligibility")
+
+    if not safe_click(page, "button:has-text('Next')"):
+        return status(
+            "CLICK_ACTION_FAILED",
+            "Next button failed on eligibility page",
+            page="eligibility",
+            step="next_click"
+        )
+
+    return None  # success — continue pipeline
