@@ -1,11 +1,20 @@
 from core.utils import (
     safe_click,
     take_screenshot,
-    status
+    status,
+    debug
 )
 def select_dropdown(page, label_text, value):
     if value:
         page.get_by_label(label_text, exact=False).select_option(value)
+def click_question_radio(page, question_index, answer):
+    option = "Yes" if str(answer).lower() == "yes" else "No"
+
+    question_block = page.locator(".question-label").nth(question_index) \
+        .locator("xpath=..")  # move to container area
+
+    question_block.get_by_text(option, exact=False).click()
+
 def select_radio_group(page, index, answer):
     option = "Yes" if str(answer).lower() == "yes" else "No"
 
@@ -13,6 +22,14 @@ def select_radio_group(page, index, answer):
 
     group.get_by_role("radio", name=option, exact=False).click()
 
+def click_yes_no(page, index, answer):
+    option = "Yes" if str(answer).lower() == "yes" else "No"
+
+    # Find question block
+    question = page.get_by_role("radiogroup").nth(index)
+
+    # Click Yes / No label
+    question.get_by_role("radio", name=option, exact=False).click()
 
 def fill_text_field(page, label_text, value):
     if value:
@@ -100,15 +117,26 @@ def fill_eligibility(page, data):
 
 
     try:
-    
+        groups = page.get_by_role("radio").all_text_contents()
+        print("[DEBUG] Radios detected:", groups)
+   
+        debug("Selecting Q1 — Age ≥ 17")
+        click_question_radio(page, 0, eligibility["is_patient_17_or_older"])
 
-        select_radio_group(page, 0, eligibility["Is your patient 17 years of age or older?"])
-        select_radio_group(page, 1, eligibility["Has your patient been prescribed VYEPTI for an FDA-approved indication"])
+        debug("Selecting Q2 — Prescribed for FDA indication")
+        click_question_radio(page, 1, eligibility["prescribed_for_fda_approved_indication"])
 
-        # These must be NO
-        select_radio_group(page, 2, "No")
-        select_radio_group(page, 3, "No")
-        select_radio_group(page, 4, "No")
+        debug("Selecting Q3 — Govt-funded insurance (MUST be No)")
+        click_question_radio(page, 2, "No")
+
+        debug("Selecting Q4 — Medicare retiree plan (MUST be No)")
+        click_question_radio(page, 3, "No")
+
+        debug("Selecting Q5 — Self-pay or uninsured (MUST be No)")
+        click_question_radio(page, 4, "No")
+
+        
+
 
 
     except Exception:
@@ -120,16 +148,27 @@ def fill_eligibility(page, data):
            
         )
     try:
-        checkbox = page.get_by_role("checkbox").first
-        checkbox.check()
+        debug("Checking attestation checkbox")
+
+        attestation = page.locator(
+            ".v-input--selection-controls__ripple"
+        ).last
+
+        attestation.scroll_into_view_if_needed()
+        attestation.click()
 
     except Exception as e:
+        take_screenshot(page, "elig_checkbox_failure")
         return status(
             "CLICK_ACTION_FAILED",
             "Eligibility attestation checkbox not selectable",
             page="eligibility",
-            step="attestation_checkbox"
+            step="attestation_checkbox",
+            extra=str(e)
         )
+    if "checked" not in page.locator("input[type='checkbox']").last.evaluate("el => el.outerHTML"):
+        debug("Fallback: clicking attestation label text")
+        page.get_by_text("By submitting this application", exact=False).click()
 
     take_screenshot(page, "01_eligibility")
 

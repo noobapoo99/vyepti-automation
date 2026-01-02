@@ -19,6 +19,8 @@ def status(code, message, page=None, step=None, extra=None):
     print(output)
     return output
 
+def debug(msg):
+    print(f"[DEBUG] {msg}")
 
 # --------------------
 # SAFE HELPERS
